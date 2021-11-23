@@ -1,0 +1,2 @@
+recursive-include rope_visualizer/templates *
+recursive-include rope_visualizer/static *

@@ -1,0 +1,124 @@
+<html>
+    <head>
+        <title>Core Rope Visualizer</title>
+        <link rel="stylesheet" href="static/rope_visualizer.css">
+        <script src="static/wiring.js"></script>
+        <script src="static/rope_visualizer.js"></script>
+    </head>
+    <body onload="setup();">
+        <div class="top_bar">
+            <div class="title">Core Rope Visualizer</div>
+        </div>
+        <div class="contents">
+            <div class="display">
+                <object id="rope" type="image/svg+xml" data="static/rope.svg">
+                    Your browser does not support SVG
+                </object>
+            </div>
+            <div class="info_box">
+                <div class="info_header">Inhibit Wires</div>
+                <table class="info_table">
+                    <tr>
+                        <td>
+                            <button type="button" class="wire_button il07" id="il07" onclick="select_wire(this);">IL07</button>
+                        </td>
+                        <td>
+                            <button type="button" class="wire_button il07" id="il07n" onclick="select_wire(this);">IL07/</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button type="button" class="wire_button il06" id="il06" onclick="select_wire(this);">IL06</button>
+                        </td>
+                        <td>
+                            <button type="button" class="wire_button il06" id="il06n" onclick="select_wire(this);">IL06/</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button type="button" class="wire_button il05" id="il05" onclick="select_wire(this);">IL05</button>
+                        </td>
+                        <td>
+                            <button type="button" class="wire_button il05" id="il05n" onclick="select_wire(this);">IL05/</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button type="button" class="wire_button il04" id="il04" onclick="select_wire(this);">IL04</button>
+                        </td>
+                        <td>
+                            <button type="button" class="wire_button il04" id="il04n" onclick="select_wire(this);">IL04/</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button type="button" class="wire_button il03" id="il03" onclick="select_wire(this);">IL03</button>
+                        </td>
+                        <td>
+                            <button type="button" class="wire_button il03" id="il03n" onclick="select_wire(this);">IL03/</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button type="button" class="wire_button il02" id="il02" onclick="select_wire(this);">IL02</button>
+                        </td>
+                        <td>
+                            <button type="button" class="wire_button il02" id="il02n" onclick="select_wire(this);">IL02/</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button type="button" class="wire_button il01" id="il01" onclick="select_wire(this);">IL01</button>
+                        </td>
+                        <td>
+                            <button type="button" class="wire_button il01" id="il01n" onclick="select_wire(this);">IL01/</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button type="button" class="wire_button ilp" id="ilp" onclick="select_wire(this);">ILP</button>
+                        </td>
+                        <td>
+                            <button type="button" class="wire_button ilp" id="ilpn" onclick="select_wire(this);">ILP/</button>
+                        </td>
+                    </tr>
+                </table>
+                <div class="info_header">Reset Wires</div>
+                <table class="info_table">
+                    <tr>
+                        <td>
+                            <button type="button" class="wire_button reset" id="reseta" onclick="select_wire(this);">RESETA</button>
+                        </td>
+                        <td>
+                            <button type="button" class="wire_button reset" id="resetb" onclick="select_wire(this);">RESETB</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button type="button" class="wire_button reset" id="resetc" onclick="select_wire(this);">RESETC</button>
+                        </td>
+                        <td>
+                            <button type="button" class="wire_button reset" id="resetd" onclick="select_wire(this);">RESETD</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <button type="button" class="wire_button wide reset" id="clear" onclick="select_wire(this);">CLEAR</button>
+                        </td>
+                    </tr>
+                </table>
+                <div class="info_header">Set Wires</div>
+                <table class="info_table">
+                    <tr>
+                        <td>
+                            <button type="button" class="wire_button set" id="setab" onclick="select_wire(this);">SETAB</button>
+                        </td>
+                        <td>
+                            <button type="button" class="wire_button set" id="setcd" onclick="select_wire(this);">SETCD</button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </body>
+</html>

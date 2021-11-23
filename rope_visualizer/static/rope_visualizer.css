@@ -1,0 +1,80 @@
+.top_bar {
+    background-color: #3282A7;
+    height: 30px;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+}
+
+.top_bar .title {
+    float: left;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 3px 35px 3px 15px;
+}
+
+.contents {
+    height: calc(100% - 30px);
+    width: 100%;
+    margin-top: 30px;
+}
+
+.display {
+    width: calc(100% - 415px);
+    position:absolute;
+    top:30px;
+    height: calc(100% - 70px);
+    padding-top: 20px;
+}
+
+.display object {
+    width: 100%;
+    height: 100%;
+}
+
+.info_box {
+    width: 400px;
+    background-color: #E8E8E8;
+    height: 100%;
+    position: fixed;
+    top: 30px;
+    right: 0px;
+}
+
+.info_table {
+    width: 100%;
+    border-spacing: 0px;
+}
+
+.info_header {
+    width: 100%;
+    text-align: center;
+    font-size: 18px;
+    padding-top: 15px;
+}
+
+.wire_button {
+    width: 200px;
+    font-size: 20px;
+    border: 0px;
+    background-color: #E8E8E8;
+}
+
+.wire_button:hover {
+    background-color: #D0D0D0;
+}
+
+.wire_button:active {
+    background-color: #C8C8C8;
+}
+
+.wire_active {
+    background-color: #C8C8C8;
+    font-weight: bold;
+}
+
+.wide {
+    width: 400px !important;
+}

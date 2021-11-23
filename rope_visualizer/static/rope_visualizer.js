@@ -25,7 +25,94 @@ function setup() {
         wire_states[wire] = false;
     }
     // svg.documentElement.addEventListener("mouseup", mouse_up, false);
-    // generate_names();
+}
+
+async function simulate_selection() {
+    let addr = document.getElementById("address").value;
+    let [inhibits, reset_inhibit, set, reset] = decode_address(addr);
+
+    reset_rope();
+
+    await perform_select(inhibits, reset_inhibit, set);
+}
+
+async function perform_select(inhibits, reset_inhibit, set) {
+    for (let i = 0; i < inhibits.length; i++) {
+        set_wire(inhibits[i], true);
+        await sleep(100);
+    }
+    set_wire(reset_inhibit, true);
+    await sleep(400);
+    set_wire(set, true);
+}
+
+async function simulate_cycle() {
+    let addr = document.getElementById("address").value;
+    let [inhibits, reset_inhibit, set, reset] = decode_address(addr);
+
+    reset_rope();
+
+    await perform_select(inhibits, reset_inhibit, set);
+
+    await sleep(400);
+    set_wire(set, false);
+    await sleep(400);
+    set_wire(reset_inhibit, false);
+
+    for (let i = 0; i < inhibits.length; i++) {
+        set_wire(inhibits[inhibits.length - i - 1], false);
+        await sleep(100);
+    }
+    await sleep(400);
+    set_wire(reset, true);
+    await sleep(400);
+    set_wire(reset, false);
+}
+
+function decode_address(addr) {
+    let inhibits = ['IL01', 'IL02', 'IL03', 'IL04', 'IL05', 'IL06', 'IL07'];
+    let parity = 1;
+    let parity_wire = 'ILP';
+    let reset_inhibit = '';
+    let reset = '';
+    let set = '';
+    for (let i = 0; i < inhibits.length; i++) {
+        if ((addr & (1 << i)) == 0) {
+            inhibits[i] += '/';
+            parity ^= 1;
+        }
+    }
+    if (addr & (1 << 7)) {
+        parity ^= 1;
+    }
+    if (parity) {
+        parity_wire += '/';
+    }
+
+    inhibits = inhibits.reverse();
+    inhibits.push(parity_wire);
+
+    if ((addr & 0400) == 0) {
+        set = 'SETAB';
+        if ((addr & 0200) == 0) {
+            reset = 'RESETA';
+            reset_inhibit = 'RESETB';
+        } else {
+            reset = 'RESETB';
+            reset_inhibit = 'RESETA';
+        }
+    } else {
+        set = 'SETCD';
+        if ((addr & 0200) == 0) {
+            reset = 'RESETC';
+            reset_inhibit = 'RESETD';
+        } else {
+            reset = 'RESETD';
+            reset_inhibit = 'RESETC';
+        }
+    }
+
+    return [inhibits, reset_inhibit, set, reset];
 }
 
 function select_wire(button) {
@@ -83,38 +170,11 @@ function interpolate(color1, color2, value, max)
 }
 
 async function mouse_down() {
-    reset_rope();
-    set_wire('IL07/', true, 0);
-    set_wire('IL06', true, 0);
-    set_wire('IL05/', true, 0);
-    set_wire('IL04', true, 0);
-    set_wire('IL03/', true, 0);
-    set_wire('IL02', true, 0);
-    set_wire('IL01/', true, 0);
-    set_wire('ILP', true, 0);
-    set_wire('RESETA', true, 0);
-    set_wire('SETAB', true, 0);
-}
-
-async function generate_names() {
-    for (let i = 0; i < wires['CLEAR'].length; i++) {
-        let core_num = wires['CLEAR'][i].substring(1);
-        let core_id = "core" + core_num;
-        let core = svg.getElementById(core_id);
-        let box = core.getBBox();
-        let name = document.createElementNS(svgns, 'text');
-        name.setAttributeNS(null, "x", box.x + box.width/2 - 6);
-        name.setAttributeNS(null, "y", box.y + box.height/2 + 2);
-        name.setAttributeNS(null, "font-size", "8");
-        name.setAttributeNS(null, "font-weight", "bold");
-        let text_node = document.createTextNode(core_num);
-        name.appendChild(text_node);
-        core.parentNode.appendChild(name);
-    }
 }
 
 function reset_rope() {
-    for (let wire in wires) {
+    let wire_names = Object.keys(wires).sort().reverse();
+    for (let wire of wire_names) {
         set_wire(wire, false);
     }
 }

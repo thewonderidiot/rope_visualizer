@@ -24,7 +24,6 @@ function setup() {
     for (let wire in wires) {
         wire_states[wire] = false;
     }
-    // svg.documentElement.addEventListener("mouseup", mouse_up, false);
 }
 
 async function simulate_selection() {
@@ -169,7 +168,20 @@ function interpolate(color1, color2, value, max)
     return result;
 }
 
-async function mouse_down() {
+function mouse_down(evt) {
+    let core = evt.target;
+    let picker = svg.getElementById('picker');
+
+    if (!core.id.startsWith("core")) {
+        picker.setAttribute('visibility', 'hidden');
+        return;
+    }
+    document.getElementById("picked_core").innerText = core.id;
+
+    let box = core.getBBox();
+    picker.setAttribute('x', box.x);
+    picker.setAttribute('y', box.y);
+    picker.setAttribute('visibility', 'visible');
 }
 
 function reset_rope() {
@@ -200,9 +212,10 @@ async function set_wire(wire, state, delay=0) {
         let core_numstr = wires[wire][i].substring(1);
         let core_num = parseInt(core_numstr, 8);
         let core_id = "core" + core_numstr;
+        let inner_id = "inner" + core_numstr;
         let core = svg.getElementById(core_id);
+        let inner = svg.getElementById(inner_id);
         let current = (state ? 1 : -1);
-
 
         if (wire.startsWith("IL0")) {
             current *= -225;
@@ -220,11 +233,15 @@ async function set_wire(wire, state, delay=0) {
         if (core_currents[core_num] > 225) {
             core.style['stroke'] = '#0000FF';
             core.style['stroke-width'] = 1.75;
+            inner.style['stroke'] = '#0000FF';
+            inner.style['stroke-width'] = 1.75;
             core_states[core_num] = CoreState.Set;
         } else if (core_currents[core_num] > 150) {
             if (core_states[core_num] != CoreState.Set) {
                 core.style['stroke'] = '#FF0000';
                 core.style['stroke-width'] = 1.75;
+                inner.style['stroke'] = '#FF0000';
+                inner.style['stroke-width'] = 1.75;
                 core_states[core_num] = CoreState.Partial;
             }
         } else if (core_currents[core_num] < -225) {
@@ -235,11 +252,15 @@ async function set_wire(wire, state, delay=0) {
             }
             core.style['stroke'] = '#000000';
             core.style['stroke-width'] = 0.755906;
+            inner.style['stroke'] = '#000000';
+            inner.style['stroke-width'] = 0.755906;
             core_states[core_num] = CoreState.Reset;
         } else if (core_currents[core_num] < -150) {
             if (core_states[core_num] == CoreState.Set) {
                 core.style['stroke'] = '#FF0000';
                 core.style['stroke-width'] = 1.75;
+                inner.style['stroke'] = '#FF0000';
+                inner.style['stroke-width'] = 1.75;
                 core_states[core_num] = CoreState.Partial;
             }
         }

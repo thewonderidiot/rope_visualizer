@@ -23891,7 +23891,7 @@
       <text x="-395.2464599609375" y="1435.103759765625" font-size="8" font-weight="bold" visibility="hidden" pointer-events="none">603</text>
       <text x="-395.2464599609375" y="1459.103759765625" font-size="8" font-weight="bold" visibility="hidden" pointer-events="none">601</text>
       <text x="-395.2464599609375" y="1483.103759765625" font-size="8" font-weight="bold" visibility="hidden" pointer-events="none">600</text>
-      <rect id="picker" x="-401.198486328125" y="1013.0632934570312" width="23.904052734375" height="23.93695068359375" stroke="#00DD00" stroke-width="2.5" stroke-dasharray="5.97601318359375 11.9520263671875 11.9520263671875 11.9520263671875 11.9520263671875 11.9520263671875 11.9520263671875 11.9520263671875 5.97601318359375" fill-opacity="0" visibility="hidden" />
+      <rect id="picker" x="-401.198486328125" y="1013.0632934570312" width="23.904052734375" height="23.93695068359375" stroke="#00DD00" stroke-width="2.5" stroke-dasharray="5.97601318359375 11.9520263671875 11.9520263671875 11.9520263671875 11.9520263671875 11.9520263671875 11.9520263671875 11.9520263671875 5.97601318359375" fill-opacity="0" pointer-events="none" visibility="hidden" />
     </g>
   </g>
 </svg>

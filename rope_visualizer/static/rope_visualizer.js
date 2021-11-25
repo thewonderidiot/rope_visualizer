@@ -86,7 +86,7 @@ function update_picked_core() {
 
     let picked_wires = '';
     for (let wire in wires) {
-        if (wire_states[wire]) {
+        if (wire_states[wire] && (wires[wire].includes('+' + core_str) || wires[wire].includes('-' + core_str))) {
             picked_wires += wire + '<br>';
         }
     }

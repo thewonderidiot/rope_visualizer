@@ -16,12 +16,15 @@
                 </object>
             </div>
             <div class="info_box">
-                <div>
-                    Address: <input type="text" id="address"><br />
+                <div class="controls">
+                    Fixed Memory Address<sub>8</sub>:&nbsp;&nbsp;&nbsp;<input type="text" id="address" value="0" oninput="restrict_address(this);" />
+                    <button type="button" onclick="simulate_cycle()">Simulate Cycle</button>
                     <button type="button" onclick="simulate_selection()">Simulate Selection</button>
-                    <button type="button" onclick="simulate_cycle()">Simulate Full Cycle</button>
-                    <button type="button" onclick="reset_rope()">Disable All Wires</button>
+                    <button type="button" onclick="reset_rope()">Disable All Wires</button><br>
+                    <input type="checkbox" id="show_names" onclick="show_names(this.checked)">
+                    <label for="show_names">Show Core Numbers</label>
                 </div>
+                <hr>
                 <div class="info_header">Inhibit Wires</div>
                 <table class="info_table">
                     <tr>
@@ -124,9 +127,31 @@
                         </td>
                     </tr>
                 </table>
-                <div>
-                    Core <span id="picked_core">-</span>
-                </div>
+                <hr>
+                <div class="info_header" id="picked_core">Core ---</div><br>
+                <table id="core_info" class="info_table">
+                    <tr>
+                        <td>
+                            State:
+                        </td>
+                        <td id="picked_state">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Net Current:
+                        </td>
+                        <td id="picked_current">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Active Wires:
+                        </td>
+                        <td id="picked_wires">
+                        </td>
+                    </tr>
+                </table>
             </div>
         </div>
     </body>

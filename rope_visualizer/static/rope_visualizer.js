@@ -1,11 +1,12 @@
 var rope = null;
 var svg = null;
+var picked_core = null;
 var svgns = "http://www.w3.org/2000/svg";
 var wire_states = {};
 
 const CoreState = {
     Reset: 'Reset',
-    Partial: 'Partial',
+    Partial: 'Partially Set',
     Set: 'Set'
 };
 
@@ -68,13 +69,59 @@ async function simulate_cycle() {
     set_wire(reset, false);
 }
 
-function decode_address(addr) {
+function update_picked_core() {
+    if (picked_core == null) {
+        document.getElementById("picked_core").innerText = 'Core ---';
+        document.getElementById("picked_state").innerText = '';
+        document.getElementById("picked_current").innerText = '';
+        document.getElementById("picked_wires").innerText = '';
+        return;
+    }
+
+    let core_str = picked_core.id.substring(4);
+    let core_num = parseInt(core_str, 8);
+    document.getElementById("picked_core").innerText = 'Core ' + core_str;
+    document.getElementById("picked_state").innerText = core_states[core_num];
+    document.getElementById("picked_current").innerText = core_currents[core_num] + ' mA';
+
+    let picked_wires = '';
+    for (let wire in wires) {
+        if (wire_states[wire]) {
+            picked_wires += wire + '<br>';
+        }
+    }
+    document.getElementById("picked_wires").innerHTML = picked_wires;
+}
+
+function restrict_address(input) {
+    input.value = input.value.replace(/[^0-7]/g, '');
+    if (!input.value) {
+        return;
+    }
+    let input_num = parseInt(input.value, 8);
+    if (input_num > 0107777) {
+        input.value = '107777';
+    }
+}
+
+function show_names(state) {
+    let numbers = svg.getElementsByClassName("core_number");
+    let vis = state ? "visible" : "hidden";
+    for (let num of numbers) {
+        num.setAttribute("visibility", vis);
+    }
+}
+
+function decode_address(raw_addr) {
     let inhibits = ['IL01', 'IL02', 'IL03', 'IL04', 'IL05', 'IL06', 'IL07'];
     let parity = 1;
     let parity_wire = 'ILP';
     let reset_inhibit = '';
     let reset = '';
     let set = '';
+
+    let addr = parseInt(raw_addr, 8);
+
     for (let i = 0; i < inhibits.length; i++) {
         if ((addr & (1 << i)) == 0) {
             inhibits[i] += '/';
@@ -174,14 +221,18 @@ function mouse_down(evt) {
 
     if (!core.id.startsWith("core")) {
         picker.setAttribute('visibility', 'hidden');
+        picked_core = null;
+        update_picked_core();
         return;
     }
-    document.getElementById("picked_core").innerText = core.id;
 
     let box = core.getBBox();
     picker.setAttribute('x', box.x);
     picker.setAttribute('y', box.y);
     picker.setAttribute('visibility', 'visible');
+
+    picked_core = core;
+    update_picked_core();
 }
 
 function reset_rope() {
@@ -271,4 +322,5 @@ async function set_wire(wire, state, delay=0) {
             await sleep(delay);
         }
     }
+    update_picked_core();
 }

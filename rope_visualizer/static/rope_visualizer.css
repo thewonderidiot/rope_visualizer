@@ -43,6 +43,43 @@
     right: 0px;
 }
 
+.controls {
+    text-align: center;
+    padding-top: 10px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.controls label {
+    font-size: 16px;
+    font-weight: normal;
+}
+
+.controls button {
+    border: 0px;
+    font-size: 18px;
+    margin: 2px;
+    padding: 5px;
+    background-color: #E0E0E0;
+}
+
+.controls button:hover {
+    background-color: #D0D0D0;
+}
+
+.controls button:active {
+    background-color: #C8C8C8;
+}
+
+#address {
+    border: 0px;
+    width: 90px;
+    height: 30px;
+    background-color: #F8F8F8;
+    font-size: 20px;
+    font-weight: bold;
+}
+
 .info_table {
     width: 100%;
     border-spacing: 0px;
@@ -77,4 +114,18 @@
 
 .wide {
     width: 400px !important;
+}
+
+#core_info {
+    font-size: 18px;
+    padding-left: 90px;
+}
+
+#core_info td {
+    width: 100px;
+    vertical-align: top;
+}
+
+#picked_core {
+    font-size: 20px;
 }

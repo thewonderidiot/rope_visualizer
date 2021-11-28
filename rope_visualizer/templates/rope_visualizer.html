@@ -8,12 +8,128 @@
     <body onload="setup();">
         <div class="top_bar">
             <div class="title">Core Rope Visualizer</div>
+            <button class="tab active"   onClick="select_tab(event, 'tab_1')">Core Selection</a>
+            <button class="tab" onClick="select_tab(event, 'tab_2')">Description</a>
         </div>
         <div class="contents">
-            <div class="display">
+            <div id="tab_1" class="display active">
                 <object id="rope" type="image/svg+xml" data="static/rope.svg">
                     Your browser does not support SVG
                 </object>
+            </div>
+            <div id="tab_2" class="display">
+                <h1>Introduction</h1>
+                <p>The fixed memory system of the Block II Apollo Guidance Computer consists of 6 physical core rope memory modules holding a total of 36,864 16-bit words. Each module contains 512 cores, which hold 192 bits of information apiece, for a total of 98,304 bits, or 6,144 words. This information is physically woven into the rope module during manufacturing. For any given core, there are 192 sense wires, each of which is either threaded through the core (indicating a <b>1</b>) or bypasses the core (indicating a <b>0</b>).</p>
+
+                <p>Like regular core memory, the cores in a core rope exhibit magnetic hysteresis -- i.e., they can be magnetized either clockwise or counter-clockwise, and retain this state indefinitely once external magnetic forces are removed. In regular core memory ththis magnetization stores one bit of information; in rope memory, it is effectively used for addressing.</p>
+
+                <p>The cores in rope memory are much larger than their core memory counterparts. They have an outer diameter of about 0.25". Instead of being solid ferrites, they are made with 0.000125"-thick mo-perm (molybdenum permalloy) tape wound around a steel bobbin. This slightly softer magnetic material reduces the magnetic force required to flip the larger core's polarity. Furthermore, the extreme thinness of the tape reduces eddy currents inside the core, allowing the switching to happen faster.</p>
+
+                <p>There are two main components of addressing core rope memory: core selection and strand selection.</p>
+
+                <h1>Core Selection</h1>
+
+                <h2>Magnetic Properties and Basic Wiring</h2>
+
+                <p>The goal of core selection is to select a single core out of the 512 in a module. This is done in two phases: the "set" phase and the "reset" phase. During the set phase, current is run through a set of wires that cause only the core being addressed to flip its magnetization. During the reset phase, strand select circuits are activated to allow reading of data, and the core is switched back to its original state.</p>
+
+                <p>Let's look at the wiring in a single core.</p>
+
+                <iframe src="core_selection.html" id="core_anim" scrolling="no"></iframe>
+
+                <p>To the left of the core is its hysteresis curve, also called the B-H curve. This diagram shows the magnetic properties of the rope memory cores. The vertical B axis is the core's flux density, measured in Teslas. This is essentially a measure of how strongly the core is magnetized. The horizontal axis is the externally applied  magnetizing force, measured in Amps per meter. When no current flows though any wires passing through the center of the core, the magnetizing force is 0, and the flux density of the core will settle into one of the two intersections of the hysteresis curve with the B axis.</p>
+
+                <p>To change the polarity of a core from its default "reset" state to its "set" state, a strong current -- 450mA in the AGC -- is run through the core's <b>Set</b> wire. This pushes the core's magnetic flux to the other side of the B axis, to its saturation point. When the set current is stopped, the core settles into a new, reversed, magnetic state. The core can be returned to its original state by running 450mA in the opposite direction through its <b>Reset</b> wire.</p>
+
+                <p>For a single core, just these two wires are sufficient. If the <b>Set</b> and <b>Reset</b> wires thread through more than one core, then additional wires are needed to prevent all of the other cores from switching. These are the <b>Inhibit</b> wires, which are also threaded through the cores to carry current opposite the direction of the Set current. <b>Inhibit</b> wires are woven in pairs, with each pair separating the cores into two zones in different ways. Each <b>Inhibit</b> wire carries 225mA when active. The magnetizing force acting on the core depends only on the net sum of current running through it; so if two <b>Inhibit</b> wires are active when the <b>Set</b> wire is activated, the net current will be (-225mA) + (-225mA) + (450mA) = 0, and the core will not switch.</p>
+
+                <p>According to Faraday's law of induction, a change in magnetic flux will induce a voltage on wires passing through that magnetic field. In practice for rope memory, this magnetic field acts inside the core on wires passing through it, but not on wires that do not pass through -- even if they are physically touching the core. This is the means by which <b>1</b>s and <b>0</b>s are stored in rope. When a core is switched, all sense wires passing through it will have an approximately 100mV pulse induced on them (indicating a <b>1</b>); any wires that do not pass through the core will not (indicating a 0). Up to 20mV of noise on the sense wire is acceptable for a <b>0</b>.</p>
+
+                <p>You may have noticed from the B-H curve that even when the core does not switch, when a core is pushed into saturation by the inhibit or reset wires, there is still a small amount of change in magnetic flux (i.e. vertical displacement on the B-H chart). This is called the "shuttle flux", which does induce a small (~5mV) "shuttle voltage", and it is a large contributor to the noisiness of rope memories. Luckily this small excursion is fast enough that the sampling window can be adjusted such that is misses the shuttle voltage on the sense wires but captures the slower, larger pulse of the actual switching core.</p>
+
+                <h2>AGC Rope Organization</h2>
+
+                <p>The 512 cores in a rope memory module are arranged in two physical 8x32-core layers. The diodes and resistors that form the strand selection networks line these layers on three sides, wired together in a cordwood structure.</p>
+
+                <img src="static/rope_structure.png">
+
+                <p>Despite the physical arrangement, the cores are logically grouped into four "planes" -- <b>A</b>, <b>B</b>, <b>C</b>, and <b>D</b>. Each layer is divided lengthwise into two 4x32 planes.</p>
+
+                <p>All address-related wires are activated or deactivated based directly off of the least significant 9 bits of the FMA (Fixed Memory Address) of the location being read. The address bits correspond to wires as follows:</p>
+
+                <table>
+                    <tr>
+                        <th>Bit</th>
+                        <th>Name</th>
+                        <th>Function</th>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>IL01</td>
+                        <td>Activates <b>IL01</b> during set time if 1, or <b>IL01/</b> if 0.</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>IL02</td>
+                        <td>Activates <b>IL02</b> during set time if 1, or <b>IL02/</b> if 0.</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>IL03</td>
+                        <td>Activates <b>IL03</b> during set time if 1, or <b>IL03/</b> if 0.</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>IL04</td>
+                        <td>Activates <b>IL04</b> during set time if 1, or <b>IL04/</b> if 0.</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>IL05</td>
+                        <td>Activates <b>IL05</b> during set time if 1, or <b>IL05/</b> if 0.</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>IL06</td>
+                        <td>Activates <b>IL06</b> during set time if 1, or <b>IL06/</b> if 0.</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>IL07</td>
+                        <td>Activates <b>IL07</b> during set time if 1, or <b>IL07/</b> if 0.</td>
+                    </tr>
+                    <tr>
+                        <td>8</td>
+                        <td>RESET</td>
+                        <td>Selects between wires <b>RESETA</b> (0) and <b>RESETB</b> (1) if bit 9 is 0, or between <b>RESETC</b> (0) and <b>RESETD</b> (1) if bit 9 is 1.
+                    </tr>
+                    <tr>
+                        <td>9</td>
+                        <td>SET</td>
+                        <td>Activates <b>SETAB</b> during set time if 0, or <b>SETCD</b> if 1.</td>
+                    </tr>
+                </table>
+
+                <p>One Set wire threads through every core in both planes of a physical layer. <b>SETAB</b> threads all of the <b>A</b> and <b>B</b> plane cores, and <b>SETCD</b> threads through the <b>C</b> and <b>D</b> plane cores. Each plane has its own dedicated Reset wire threading all cores -- <b>RESETA</b>, <b>RESETB</b>, <b>RESETC</b>, and <b>RESETD</b>. Because the reading is done at reset time, having shorter Reset wires reduces both the impedance of the wire and the shuttle voltage noise from unswitched cores. Because these things don't matter during the set phase, the Set wires can be longer to reduce the number of pins required, so long as the inhibit wiring scheme is sufficient to select only one core out of the two planes receiving a Set current.</p>
+
+                <p>Inhibit wiring is accomplished via inhibit wires <b>IL01</b> through <b>IL07</b> and <b>IL01/</b> through <b>IL07/</b>. Each <b>IL0x</b> and <b>IL0x/</b> split all 512 cores in the module into two 256-core groups in different ways -- e.g. <b>IL01</b> threads through a group of 256 cores, and <b>IL01/</b> threads through the other 256 cores. The groups are chosen such that each successive inhibit wire that is activated cuts the number of remaining uninhibited cores in half.</p>
+
+                <p>Seven inhibit wires is, of course, not enough to uniquely select 1 out of 512 cores. When one wire from each of the seven inhibit pairs is activated, the total number of cores receiving no inhibit current is <b>512 / 2<sup>7</sup> = 4</b>. It works out that these four cores are evenly distributed among the four planes. Because only one of <b>SETAB</b> or <b>SETCD</b> is activated during any given set cycle, two of these uninhibited cores don't matter; they pose no risk for switching because they will not receive any Set current. The core located in the other plane in the same physical layer, however, <i>does</i> pose a problem.</p>
+                <p>A further issue is that for any given address, there exist a number of addresses that differ by only a single bit. Each one of the cores corresponding these addresses will therefore have only a single inhibit wire active. For these cores, the single 225mA Inhibit current is not sufficient to oppose the 450mA Set current. The net +225mA will apply enough magnetic force to the cores to at least partially set them, which would wreak havoc on future reads.</p>
+
+                <p> One additional pair of inhibit wires were added to solve both of these problems: the <i>parity</i> inhibit wires <b>ILP</b> and <b>ILP/</b>. These wires are woven in a more complex pattern, passing through each core based on the parity (i.e., number of <b>1</b>s) in the least significant <b>8</b> bits of the address. Specifically, <b>ILP</b> is activated if the number of <b>1</b>s is even, and <b>ILP/</b> is activated if it is odd. With this scheme, it is theoretically guaranteed that the parity inhibit wire will be active in every core whose address differs only by 1 bit. This occurs naturally because two addresses with only 1 bit different will by definition contain different numbers of <b>1</b>s.
+
+                <p>Note that this property also applies to the core that differs only in bit 8 -- i.e., the second fully uninhibited core in the same physical layer as the core being read. When all 8 inhibit wires for a read are activated, then, this core will <i>only</i> have the parity wire active in it. All other cores in the target physical layer will have at least two inhibit wires active. Because of this one core, the parity inhibit current was increased to 300mA. While the regular 225mA Inhibit current is insufficient to oppose the 450mA Set current, the 300mA parity current is. A net <b>-300mA + 450mA = 150mA</b> will not cause any partial setting of the core.</p>
+
+                <p>That, at least, was the theory -- but there is a design flaw that wasn't caught until relatively late in the Block II logic design. Recall that while there are only 7 normal inhibit wire pairs, the parity inhibit wire is calculated over the lower <b>8</b> bits of the address. With this in mind, consider what happens when an address differs from the target address in both bit 8 and one other bit (1-7). Because one bit associated with inhibit wires is different, one normal inhibit wire will be active in the core. But because bit 8 contributes to the parity but does not control an inhibit wire, <i>no other inhibit wires will be active, including parity</i>. Again due to the bit 8 difference, all 7 of the cores in question will be in the same physical layer as the target core, but in the opposite plane. This means that with the scheme described so far, any time a core is read in one plane, an additional 7 cores will be set in the other plane in the same layer. No good!</p>
+
+                <p>By the time this was discovered, it was too late to make significant design changes. In theory, this could have been fixed by increasing the current for every inhibit wire pair to 300mA, such that any single inhibit wire would be enough to oppose the Set current. This would have led to an additional <b>75mA * 7 = 525mA</b> required for every Set cycle.</p> However, a cheaper option was discovered. Because all 7 of the problem cores will always be in a different plane from the core being read, it is possible to also activate the 450mA Reset wire corresponding to that plane during the Set cycle. This will strongly inhibit all cores in that plane.</p>
+
+                <p>With all of this -- 7 inhibit wires, 1 inhibit parity wire, 1 reset wire, and 1 set wire -- one single core in the module is switched from its reset state to its set state during the Set phase. The Reset phase is significantly simpler: only the Reset wire corresponding to the plane containing the switched core needs to be activated. As the core switches back to its reset state, a voltage is induced on all (up to) 192 sense wires threading through it. Core selection is now complete, and it is the job of the strand selection circuits to down-select these 192 sense wires down to the 16 corresponding to the memory location being read.</p>
+
+                <h1>Strand Selection</h1>
+                <p> To be written.... in which data is passed out of the module backwards (!) through diodes.</p>
+                <img src="static/strand_selection.png">
             </div>
             <div class="info_box">
                 <div class="controls">

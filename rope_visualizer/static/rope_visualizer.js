@@ -324,3 +324,18 @@ async function set_wire(wire, state, delay=0) {
     }
     update_picked_core();
 }
+
+function select_tab(evt, tab) {
+    var tab_displays = document.getElementsByClassName("display");
+    for (var i = 0; i < tab_displays.length; i++) {
+        tab_displays[i].className = tab_displays[i].className.replace(" active", "");
+    }
+
+    var tabs = document.getElementsByClassName("tab");
+    for (var i = 0; i < tabs.length; i++) {
+        tabs[i].className = tabs[i].className.replace(" active", "");
+    }
+
+    document.getElementById(tab).className += " active";
+    evt.currentTarget.className += " active";
+}

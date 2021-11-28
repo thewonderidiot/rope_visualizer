@@ -5,6 +5,7 @@
     top: 0px;
     left: 0px;
     width: 100%;
+    font-family: Arial;
 }
 
 .top_bar .title {
@@ -14,6 +15,28 @@
     font-weight: bold;
     padding: 3px 35px 3px 15px;
 }
+
+.tab {
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    transition: 0.3s;
+    height: 100%;
+    width: 150px;
+    background-color: inherit;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.tab:hover {
+    background-color: #4090C0;
+}
+
+.tab.active {
+    background-color: #50A0D0;
+}
+
 
 .contents {
     height: calc(100% - 30px);
@@ -27,6 +50,11 @@
     top:30px;
     height: calc(100% - 70px);
     padding-top: 20px;
+    visibility: hidden;
+}
+
+.display.active {
+    visibility: visible !important;
 }
 
 .display object {
@@ -41,6 +69,7 @@
     position: fixed;
     top: 30px;
     right: 0px;
+    font-family: Arial;
 }
 
 .controls {
@@ -128,4 +157,27 @@
 
 #picked_core {
     font-size: 20px;
+}
+
+#tab_2 {
+    padding-left: 200px;
+    padding-right: 200px;
+    overflow-y: auto;
+    width: calc(100% - 815px) !important;
+}
+
+#core_anim {
+    width: 1000px;
+    height: 400px;
+    border: 0px;
+    font-family: "Times New Roman";
+}
+
+#tab_2 table, #tab_2 th, #tab_2 td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+#tab_2 th, #tab_2 td {
+    padding: 5px;
 }

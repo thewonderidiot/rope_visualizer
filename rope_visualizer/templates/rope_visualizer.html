@@ -21,7 +21,7 @@
                 <h1>Introduction</h1>
                 <p>The fixed memory system of the Block II Apollo Guidance Computer consists of 6 physical core rope memory modules holding a total of 36,864 16-bit words. Each module contains 512 cores, which hold 192 bits of information apiece, for a total of 98,304 bits, or 6,144 words. This information is physically woven into the rope module during manufacturing. For any given core, there are 192 sense wires, each of which is either threaded through the core (indicating a <b>1</b>) or bypasses the core (indicating a <b>0</b>).</p>
 
-                <p>Like regular core memory, the cores in a core rope exhibit magnetic hysteresis -- i.e., they can be magnetized either clockwise or counter-clockwise, and retain this state indefinitely once external magnetic forces are removed. In regular core memory ththis magnetization stores one bit of information; in rope memory, it is effectively used for addressing.</p>
+                <p>Like regular core memory, the cores in a core rope exhibit magnetic hysteresis -- i.e., they can be magnetized either clockwise or counter-clockwise, and retain this state indefinitely once external magnetic forces are removed. In regular core memory this magnetization stores one bit of information; in rope memory, it is effectively used for addressing.</p>
 
                 <p>The cores in rope memory are much larger than their core memory counterparts. They have an outer diameter of about 0.25". Instead of being solid ferrites, they are made with 0.000125"-thick mo-perm (molybdenum permalloy) tape wound around a steel bobbin. This slightly softer magnetic material reduces the magnetic force required to flip the larger core's polarity. Furthermore, the extreme thinness of the tape reduces eddy currents inside the core, allowing the switching to happen faster.</p>
 
@@ -35,7 +35,10 @@
 
                 <p>Let's look at the wiring in a single core.</p>
 
-                <iframe src="core_selection.html" id="core_anim" scrolling="no"></iframe>
+                <figure>
+                    <iframe src="core_selection.html" id="core_anim" scrolling="no"></iframe>
+                    <figcaption>Figure 1. Core magnetic response to wire activity. The upper B-axis intersection is the "reset" magnetization, and the lower one is the "set".</figcaption>
+                </figure>
 
                 <p>To the left of the core is its hysteresis curve, also called the B-H curve. This diagram shows the magnetic properties of the rope memory cores. The vertical B axis is the core's flux density, measured in Teslas. This is essentially a measure of how strongly the core is magnetized. The horizontal axis is the externally applied  magnetizing force, measured in Amps per meter. When no current flows though any wires passing through the center of the core, the magnetizing force is 0, and the flux density of the core will settle into one of the two intersections of the hysteresis curve with the B axis.</p>
 
@@ -43,7 +46,12 @@
 
                 <p>For a single core, just these two wires are sufficient. If the <b>Set</b> and <b>Reset</b> wires thread through more than one core, then additional wires are needed to prevent all of the other cores from switching. These are the <b>Inhibit</b> wires, which are also threaded through the cores to carry current opposite the direction of the Set current. <b>Inhibit</b> wires are woven in pairs, with each pair separating the cores into two zones in different ways. Each <b>Inhibit</b> wire carries 225mA when active. The magnetizing force acting on the core depends only on the net sum of current running through it; so if two <b>Inhibit</b> wires are active when the <b>Set</b> wire is activated, the net current will be (-225mA) + (-225mA) + (450mA) = 0, and the core will not switch.</p>
 
-                <p>According to Faraday's law of induction, a change in magnetic flux will induce a voltage on wires passing through that magnetic field. In practice for rope memory, this magnetic field acts inside the core on wires passing through it, but not on wires that do not pass through -- even if they are physically touching the core. This is the means by which <b>1</b>s and <b>0</b>s are stored in rope. When a core is switched, all sense wires passing through it will have an approximately 100mV pulse induced on them (indicating a <b>1</b>); any wires that do not pass through the core will not (indicating a 0). Up to 20mV of noise on the sense wire is acceptable for a <b>0</b>.</p>
+                <p>According to Faraday's law of induction, a change in magnetic flux will induce a voltage on wires passing through that magnetic field. In practice for rope memory, this magnetic field acts inside the core on wires passing through it, but not on wires that do not pass through -- even if they are physically touching the core. This is the means by which <b>1</b>s and <b>0</b>s are stored in rope. When a core is switched, all sense wires passing through it will have an approximately 100mV pulse induced on them (indicating a <b>1</b>); any wires that do not pass through the core will not (indicating a 0). Up to 25mV of noise on the sense wire is acceptable for a <b>0</b>.</p>
+
+                <figure>
+                    <img src="static/sense_output.png">
+                    <figcaption>Figure 2. Sense wire output envelopes. Because the direction a sense wire threads through a core is not controlled, the direction of a <b>1</b> pulse is unpredictable. This diagram therefore shows minimum and maximum expected pulses for both positive and negative cases.</figcaption>
+                </figure>
 
                 <p>You may have noticed from the B-H curve that even when the core does not switch, when a core is pushed into saturation by the inhibit or reset wires, there is still a small amount of change in magnetic flux (i.e. vertical displacement on the B-H chart). This is called the "shuttle flux", which does induce a small (~5mV) "shuttle voltage", and it is a large contributor to the noisiness of rope memories. Luckily this small excursion is fast enough that the sampling window can be adjusted such that is misses the shuttle voltage on the sense wires but captures the slower, larger pulse of the actual switching core.</p>
 
@@ -51,7 +59,10 @@
 
                 <p>The 512 cores in a rope memory module are arranged in two physical 8x32-core layers. The diodes and resistors that form the strand selection networks line these layers on three sides, wired together in a cordwood structure.</p>
 
-                <img src="static/rope_structure.png">
+                <figure>
+                    <img src="static/rope_structure.png">
+                    <figcaption>Figure 3. Core rope module mechanical structure (sans internal wiring), based on <a href="https://ibiblio.org/apollo/6014999-021.html#2003053-061">2003053</a> and <a href="https://ibiblio.org/apollo/6014999-091.html#2003972-1071">2003972</a> mechanical drawings.</figcaption>
+                </figure>
 
                 <p>Despite the physical arrangement, the cores are logically grouped into four "planes" -- <b>A</b>, <b>B</b>, <b>C</b>, and <b>D</b>. Each layer is divided lengthwise into two 4x32 planes.</p>
 
@@ -123,13 +134,73 @@
 
                 <p>That, at least, was the theory -- but there is a design flaw that wasn't caught until relatively late in the Block II logic design. Recall that while there are only 7 normal inhibit wire pairs, the parity inhibit wire is calculated over the lower <b>8</b> bits of the address. With this in mind, consider what happens when an address differs from the target address in both bit 8 and one other bit (1-7). Because one bit associated with inhibit wires is different, one normal inhibit wire will be active in the core. But because bit 8 contributes to the parity but does not control an inhibit wire, <i>no other inhibit wires will be active, including parity</i>. Again due to the bit 8 difference, all 7 of the cores in question will be in the same physical layer as the target core, but in the opposite plane. This means that with the scheme described so far, any time a core is read in one plane, an additional 7 cores will be set in the other plane in the same layer. No good!</p>
 
-                <p>By the time this was discovered, it was too late to make significant design changes. In theory, this could have been fixed by increasing the current for every inhibit wire pair to 300mA, such that any single inhibit wire would be enough to oppose the Set current. This would have led to an additional <b>75mA * 7 = 525mA</b> required for every Set cycle.</p> However, a cheaper option was discovered. Because all 7 of the problem cores will always be in a different plane from the core being read, it is possible to also activate the 450mA Reset wire corresponding to that plane during the Set cycle. This will strongly inhibit all cores in that plane.</p>
+                <p>By the time this was discovered, it was too late to make significant design changes. In theory, this could have been fixed by increasing the current for every inhibit wire pair to 300mA, such that any single inhibit wire would be enough to oppose the Set current. This would have led to an additional <b>75mA * 7 = 525mA</b> required for every Set cycle.</p>
 
-                <p>With all of this -- 7 inhibit wires, 1 inhibit parity wire, 1 reset wire, and 1 set wire -- one single core in the module is switched from its reset state to its set state during the Set phase. The Reset phase is significantly simpler: only the Reset wire corresponding to the plane containing the switched core needs to be activated. As the core switches back to its reset state, a voltage is induced on all (up to) 192 sense wires threading through it. Core selection is now complete, and it is the job of the strand selection circuits to down-select these 192 sense wires down to the 16 corresponding to the memory location being read.</p>
+                <p>The MIT/IL engineers found a better solution, though. Because all 7 of the problem cores will always be in a different plane from the core being read, it is possible to also activate the 450mA Reset wire corresponding to that plane during the Set cycle. This will strongly inhibit all cores in that plane.</p>
 
-                <h1>Strand Selection</h1>
-                <p> To be written.... in which data is passed out of the module backwards (!) through diodes.</p>
-                <img src="static/strand_selection.png">
+                <figure>
+                    <img src="static/reset_change.png">
+                    <figcaption>Figure 4. AGC Set/Reset logic before and after the reset fix, made in September 1965. Block II design had been in work since 1963, and the first computer was delivered in December 1965, making this a very late logic change.</figcaption>
+                </figure>
+
+                <p>With all of this -- 7 inhibit wires, 1 inhibit parity wire, 1 reset wire, and 1 set wire -- one single core in the module is switched from its reset state to its set state during the Set phase. The Reset phase is significantly simpler: only the Reset wire corresponding to the plane containing the switched core needs to be activated. As the core switches back to its reset state, a voltage is induced on all (up to) 192 sense wires threading through it.</p>
+
+                <p>There is one final wire related to core selection that we haven't discussed. Since the Block II AGC reads data from rope memory at reset time, a significant amount of time passes between when an address is first determined and the data from it becomes available. Because of this delay, the rope memory cycle is actually started in the preceding instruction, before the instruction accessing the data is fully decoded. It is possible for various reasons (interrupts, counts, quarter-code instructions, etc.) that a rope cycle needs to be aborted after it has been started. By the time this happens, the Set cycle has already been completed but the Reset cycle has not yet begun. To simplify recovery from this state, the <b>CLEAR</b> wire is threaded through every core. Pulsing 350mA through this wire guarantees that whatever core got set is reset, without any additional logic required.</p>
+
+                <p>Core selection is now complete, and it is the job of the strand selection circuits to down-select these 192 sense wires down to the 16 corresponding to the memory location being read.</p>
+
+                <h1>Strand and Module Selection</h1>
+                
+                <p>The strand selection circuitry is comprised of two parts: strand selection and module selection. The need for strand selection is obvious given the discussion so far; the desired data for any address is located on one of 12 sets of 16 sense wires. So far, however, we've only looked at what happens inside a single module. There are six such modules installed in the computer, logically organized as three pairs. All core selection wires are connected in series between each pair. As a result, the Set cycle actually sets <i>two</i> cores -- one in each module in a pair. There therefore must also be a mechanism for selecting between the two modules, in addition to selecting one of the twelve strands.</p>
+
+                <figure>
+                    <img src="static/rope_organization.png">
+                    <figcaption>Figure 5. Rope organization diagram, showing the series wiring between pairs of rope modules.</figcaption>
+                </figure>
+
+                <p>Both types of selection are implemented as resistor-diode networks, and operate under the same basic principle. All diodes are situated in series with the flow of data on the sense lines. To select a particlar module, and to select a 16-bit word out of the 12 available from that module, the addressing logic of the computer applies voltages to strategic points of these networks such that the desired path is the only one in which all diodes are forward-biased. These forward-biased diodes will pass the voltage blip from the switching core, while all of the revserse-biased diodes will block the signal. For the following sections, refer to Figure 6, an explanatory diagram from MIT.</p>
+                <figure>
+                    <img src="static/strand_selection.png">
+                    <figcaption>Figure 6. Strand and module selection circuitry. The one selected core in each module is shown, along with two strands in each -- one selected and one deselected.</figcaption>
+                </figure>
+
+                <h2>Strand Selection</h2>
+                <p>The strand selection networks are relatively straightforward. There is one input pin on each module for each strand, to which voltages are applied for selection. All pins for the same strand are wired together for all six modules. In Figure 6, these wires are labeled <b>a</b> and <b>b</b>, connecting pins <b>a1</b> and <b>a2</b>, and pins <b>b1</b> and <b>b2</b>, respectively. These strand selection pins are connected to the sense lines through a series of resistors, which pull the sense lines associated with that strand to the voltage applied to the strand selection pin.</p>
+
+                <p>In Figure 6, strand <b>a</b> is deselected, and all pins connected to it are pulled to 0 Volts. Diodes <b>d5</b> and <b>d6</b> will thus <i>always</i> be reverse-biased, regardless of what voltage is applied to the module selection pin <b>m1</b>. While reverse-biased, these diodes will effectively block all signals coming from a switching core. Meanwhile, strand <b>b</b> is selected by application of 14 Volts. Diodes <b>d1</b> and <b>d2</b> are then forward-biased, and will cleanly pass through data to the next stage of the circuit. This circuit is duplicated for all 16 sense wires in all 12 strands -- so after this stage of diodes, we are down to only 16 wires which contain the data for our target strand.</p>
+                
+                <h2>Module Selection</h2>
+                <p>An additional stage of diodes selection is used to connect the sense outputs from only the one desired rope module to the computer's sense amplifiers. The means by which this happens extremely unintuitive. Like strand selection, the module selection diodes will only pulses through when they are forward-biased. Unlike strand selection though, the data appears to go <i>backwards</i> through these diodes to exit the module. Diodes are not known for passing current backwards, and the breakdown voltage for the diodes in question is no less than 70 Volts -- so it is not immediately obvious how the 100mV pulse from a switching core makes it through.</p>
+
+                <p>Each module has one module selection pin, shown as nodes <b>m1</b> and <b>m2</b> in Figure 6. All unselected modules have 14V applied on this pin. This keeps diodes <b>d3</b> and <b>d4</b> reverse-biased, so no pulses are able to escape the module, even on the selected strand.</p>
+
+                <p>The selected module is connected to a 128mA constant current source, which is simplified to 2 Volts in Figure 6. This forward-biases <b>d3</b> and <b>d4</b>, allowing pulses to exit the module and make it into the computer's sense amplifiers. The means by which data makes it through these diodes is illustrated in Figure 7.</p>
+                
+                <figure>
+                    <img src="static/module_selection.png">
+                    <figcaption>Figure 7. Redrawn module selection circuitry. Strand selection networks are omitted for simplicity.</figcaption>
+                </figure>
+
+                <p>Normally the core has no effect on the wire passing through it, so nodes <b>y</b> and <b>z</b> are shorted together and at the same voltage. Both diodes are forward-biased, and so nodes <b>w</b> and <b>x</b> are also at the same voltage, approximately 0.6V higher than nodes <b>y</b> and <b>z</b>. The differential amplifier connected to these wires will see no difference, and will output a <b>0</b>.</p>
+
+                <p>When the core switches, approximately 100mV is momentarily developed between nodes <b>y</b> and <b>z</b>. Since both diodes are forward-biased, they will maintain a constant forward voltage drop of about 0.6V. Nodes <b>w</b> and <b>x</b> will therefore <i>also</i> develop a 100mV difference. This is enough to be detectable by the differential amplifier as a <b>1</b>.</p>
+
+                <p>Note that because this is a differential measurement of a transient pulse, all of the diodes must be dynamically well-matched pairs. Additionally, because the forward voltage of a diode depends in part on current, noise on the voltage rails involved in strand and module selection could potentially erroneously be detected as data if the diodes respond differently. The use of a constant current source on the module selection pin mitigates this concern.</p>
+
+                <h1>References</h1>
+                <ul>
+                    <li><a href="https://www.ibiblio.org/apollo/Documents/dd_memo_219.pdf">Digital Development Memo #219: Core Rope Memory Selection, Block II</a></li>
+                    <li><a href="https://www.ibiblio.org/apollo/Documents/dd_memo_239.pdf">Digital Development Memo #239: Block II Rope Memory Circuits and Timing</a></li>
+                    <li><a href="https://www.ibiblio.org/apollo/Documents/agc_blk2_design_review.pdf">Apollo Block II and LEM Computer Design Review</a></li>
+                    <li><a href="https://archive.org/details/aperturecardbox473part1narasw_images_201911/page/n825/mode/1up?view=theater">JDC 04255: Fixed Memory Test</a></li>
+                    <li><a href="https://www.ibiblio.org/apollo/Documents/R-500%20Volume%202%20of%202.pdf">R-500: Space Navigation Guidance and Control, Volume II</a></li>
+                    <li><a href="https://archive.org/details/acelectroniclmma00acel_0/page/n275/mode/1up?view=theater">ND-1021042: LEM Primary Guidance, Navigation, and Control System Manual, Volume II</a></li>
+                    <li><a href="https://archive.org/details/apertureCardBox439Part2NARASW_images/page/n242/mode/1up?view=theater">SCD 1006320: Core, Magnetic</a></li>
+                    <li><a href="https://archive.org/details/apertureCardBox459NARASW_images/apertureCardBox459NARASW/page/n1649/mode/1up?view=theater">2005017: Inhibit Wiring, Fixed Memory</a></li>
+                    <li><a href="https://archive.org/details/apertureCardBox460NARASW_images/apertureCardBox460NARASW/page/n361/mode/1up?view=theater">2005935: Schematic, Fixed Memory Module B1-6</a></li>
+                    <li><a href="https://archive.org/details/apertureCardBox460NARASW_images/apertureCardBox460NARASW/page/n374/mode/1up?view=theater">2005938: Schematic, Rope Driver Module B16-B17</a></li>
+                    <li><a href="https://archive.org/details/apertureCardBox460NARASW_images/apertureCardBox460NARASW/page/n344/mode/1up?view=theater">2005926: Schematic, Strand Select Module No. B15</a></li>
+                </ul>
             </div>
             <div class="info_box">
                 <div class="controls">
